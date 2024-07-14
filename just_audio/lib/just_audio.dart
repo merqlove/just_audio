@@ -3091,7 +3091,16 @@ class LockCachingAudioSource extends StreamAudioSource {
       httpClient.close();
       _downloading = false;
     }, onError: (Object e, StackTrace stackTrace) async {
-      (await _partialCacheFile).deleteSync();
+      try {
+        (await _partialCacheFile).deleteSync();
+      } catch (e) {
+        if (e is FileSystemException) {
+          print('Failed to delete the file: ${e.message}');
+        } else {
+          print('An unexpected error occurred: $e');
+        }
+      }
+
       httpClient.close();
       // Fail all pending requests
       for (final req in _requests) {
